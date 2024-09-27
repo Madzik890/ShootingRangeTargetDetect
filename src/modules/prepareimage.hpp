@@ -8,7 +8,7 @@
 class PrepareImage final : public IModule
 {
   public:
-    cv::Mat run(const cv::Mat &image) override;
+    cv::Mat run(const cv::Mat &baseImage, const cv::Mat &image) override;
 
   private:
     cv::ColorConversionCodes mColorConversionCode = cv::COLOR_BGR2GRAY;

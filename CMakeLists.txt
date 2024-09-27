@@ -29,7 +29,8 @@ add_executable(main
                     src/main.cpp
                     src/pipeline.cpp
                     src/modules/prepareimage.cpp
-                    src/modules/targetdetect.cpp)
+                    src/modules/targetdetect.cpp
+                    src/modules/shottracking.cpp)
 
 # tell it to link the executable target against OpenCV
 target_link_libraries(main ${OpenCV_LIBS})

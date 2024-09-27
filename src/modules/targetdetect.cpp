@@ -5,29 +5,13 @@
 #include <opencv2/opencv.hpp>
 #include <stdexcept>
 
-cv::Mat TargetDetect::run(const cv::Mat &image)
+cv::Mat TargetDetect::run(const cv::Mat &baseImage, const cv::Mat &image)
 {
   std::cout << __PRETTY_FUNCTION__ << " -> run" << std::endl;
-  std::vector<std::vector<cv::Point>> squares;
-
-  cv::Mat gray, blurred, edged; 
-  
-  cv::cvtColor(image, gray, mColorConversionCode);  
-
-  if(getDebugMode()) cv::imwrite("./target_detect_0.jpg", gray);
-  std::cout << __PRETTY_FUNCTION__ << " -> cvtColor to conversionCode: " << mColorConversionCode << std::endl;
-
-  cv::GaussianBlur(gray, blurred, mKSize, mSigmaX, mSigmaY);
-  if(getDebugMode()) cv::imwrite("./target_detect_1.jpg", blurred);
-  std::cout << __PRETTY_FUNCTION__ << " -> GaussianBlur with ksize: " << mKSize << " sigmaX: " << mSigmaX << " sigmaY: " << mSigmaY << std::endl;
-
-  cv::Canny(blurred, edged, mThreshold1, mThreshold2, mApertureSize);
-
-  if(getDebugMode()) cv::imwrite("./target_detect_2.jpg", edged);
-  
+  std::vector<std::vector<cv::Point>> squares;  
 
   std::vector<std::vector<cv::Point>> contours;
-  cv::findContours(edged, contours, mMode, mMethod);
+  cv::findContours(image, contours, mMode, mMethod);
 
   std::cout << __PRETTY_FUNCTION__ << " -> found contours: " << contours.size() << std::endl;
 
@@ -65,18 +49,23 @@ cv::Mat TargetDetect::run(const cv::Mat &image)
   for (int i = 0; i < 4; i++) {
       src_points.push_back(cv::Point2f(square[i].x, square[i].y));
   }
+
+  const auto imageX = mResultImageX == -1 ? baseImage.cols : mResultImageX;
+  const auto imageY = mResultImageY == -1 ? baseImage.rows : mResultImageY;
+
+  std::cout << __PRETTY_FUNCTION__ << " -> imageX: " << imageX << " imageY: " << imageY << std::endl;
       
   std::vector<cv::Point2f> dst_points = {
       cv::Point2f(0, 0),
-      cv::Point2f(mResultImageX, 0),
-      cv::Point2f(mResultImageX, mResultImageY),
-      cv::Point2f(0, mResultImageY)
+      cv::Point2f(imageX, 0),
+      cv::Point2f(imageX, imageY),
+      cv::Point2f(0, imageY)
   };
 
   cv::Mat transform_matrix = cv::getPerspectiveTransform(src_points, dst_points);
 
   cv::Mat transformed_image;
-  cv::warpPerspective(image, transformed_image, transform_matrix, cv::Size(mResultImageX, mResultImageY));
+  cv::warpPerspective(mRawMode ? baseImage : image, transformed_image, transform_matrix, cv::Size(imageX, imageY));
 
   return transformed_image;
 }

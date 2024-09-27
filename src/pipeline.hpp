@@ -27,6 +27,7 @@ class Pipeline final
 
   public:
     cv::Mat run(const cv::Mat &image);
+    void reset() noexcept;
 
   public:
     void setDebugMode(bool debugMode) noexcept { mDebugMode = debugMode; }
